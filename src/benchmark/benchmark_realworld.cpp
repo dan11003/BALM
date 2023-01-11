@@ -74,7 +74,7 @@ int read_pose(vector<double> &tims, PLM(3) &rots, PLV(3) &poss, string prename)
 
 void read_file(vector<IMUST> &x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_fulls, string &prename)
 {
-  prename = prename + "/datas/benchmark_realworld/";
+  //prename = prename + "/datas/benchmark_realworld/";
 
   PLV(3) poss; PLM(3) rots;
   vector<double> tims;
@@ -119,7 +119,7 @@ void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_
   for(int i=0; i<winsize; i++)
   {
     pcl::PointCloud<PointType> pl_tem = *pl_fulls[i];
-    down_sampling_voxel(pl_tem, 0.05);
+    //down_sampling_voxel(pl_tem, 0.05);
     pl_transform(pl_tem, x_buf[i]);
     pl_send += pl_tem;
 
@@ -148,16 +148,18 @@ int main(int argc, char **argv)
   pub_test = n.advertise<sensor_msgs::PointCloud2>("/map_test", 100);
   pub_path = n.advertise<sensor_msgs::PointCloud2>("/map_path", 100);
   pub_show = n.advertise<sensor_msgs::PointCloud2>("/map_show", 100);
+  usleep(100*1000);
+
 
   string prename, ofname;
   vector<IMUST> x_buf;
   vector<pcl::PointCloud<PointType>::Ptr> pl_fulls;
-
+  std::string directoryPath;
   n.param<double>("voxel_size", voxel_size, 1);
-  string file_path;
-  n.param<string>("file_path", file_path, "");
+  //n.param<string>("file_path", file_path, ""); //daniel
+  n.param<std::string>("DirectoryPath", directoryPath, "");
 
-  read_file(x_buf, pl_fulls, file_path);
+  read_file(x_buf, pl_fulls, directoryPath);
 
   IMUST es0 = x_buf[0];
   for(uint i=0; i<x_buf.size(); i++)
