@@ -104,7 +104,14 @@ void read_file(vector<IMUST> &x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl
   
 
 }
-
+void SavePointCLoud(const std::string& path, std::vector<pcl::PointCloud<PointType>::Ptr> clouds){
+    pcl::PointCloud<PointType>::Ptr merged(new pcl::PointCloud<PointType>());
+    for(auto && cld : clouds){
+      *merged += *cld;
+    }
+    pcl::PCDWriter writer;
+    writer.writeBinary(path, *merged);
+}
 void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_fulls)
 {
   IMUST es0 = x_buf[0];
@@ -206,6 +213,7 @@ int main(int argc, char **argv)
   }
 
   malloc_trim(0);
+  SavePointCLoud(directoryPath + "refined_BALM.pcd", pl_fulls);
   data_show(x_buf, pl_fulls);
   printf("Refined point cloud is published.\n");
 
