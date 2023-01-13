@@ -112,7 +112,7 @@ void SavePointCLoud(const std::string& path, std::vector<pcl::PointCloud<PointTy
     pcl::PCDWriter writer;
     writer.writeBinary(path, *merged);
 }
-void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_fulls)
+void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_fulls, const std::string& path, bool downsample)
 {
   IMUST es0 = x_buf[0];
   for(uint i=0; i<x_buf.size(); i++)
@@ -126,16 +126,17 @@ void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_
   for(int i=0; i<winsize; i++)
   {
     pcl::PointCloud<PointType> pl_tem = *pl_fulls[i];
-    //down_sampling_voxel(pl_tem, 0.05);
+    if(downsample)
+      down_sampling_voxel(pl_tem, 0.05);
     pl_transform(pl_tem, x_buf[i]);
     pl_send += pl_tem;
 
-    if((i%200==0 && i!=0) || i == winsize-1)
+    /*if((i%200==0 && i!=0) || i == winsize-1)
     {
       pub_pl_func(pl_send, pub_show);
       pl_send.clear();
       sleep(0.5);
-    }
+    }*/
 
     PointType ap;
     ap.x = x_buf[i].p.x();
@@ -144,8 +145,13 @@ void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_
     ap.curvature = i;
     pl_path.push_back(ap);
   }
+  pcl::PCDWriter writer;
+  writer.writeBinary(path+"_cloud"  + (downsample ? "_downsample" : "") + ".pcd", pl_send);
 
   pub_pl_func(pl_path, pub_path);
+
+  pcl::PCDWriter writer2;
+  writer2.writeBinary(path+"_traj.pcd", pl_path);
 }
 
 int main(int argc, char **argv)
@@ -194,7 +200,9 @@ int main(int argc, char **argv)
       iter->second->tras_opt(voxhess, win_size);
     }
 
-    data_show(x_buf, pl_fulls);
+    const std::string path_before = directoryPath + "_before_BALM";
+    data_show(x_buf, pl_fulls, path_before, true);
+    data_show(x_buf, pl_fulls, path_before, false);
     printf("Initial point cloud is published.\n");
     printf("Input '1' to start optimization...\n");
     int a; cin >> a; if(a==0) exit(0);
@@ -213,8 +221,10 @@ int main(int argc, char **argv)
   }
 
   malloc_trim(0);
-  SavePointCLoud(directoryPath + "refined_BALM.pcd", pl_fulls);
-  data_show(x_buf, pl_fulls);
+  //SavePointCLoud(directoryPath + "refined_BALM.pcd", pl_fulls);
+  const std::string path_after = directoryPath + "_after_BALM";
+  data_show(x_buf, pl_fulls, path_after, true);
+  data_show(x_buf, pl_fulls, path_after, false);
   printf("Refined point cloud is published.\n");
 
   ros::spin();

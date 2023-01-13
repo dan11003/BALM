@@ -1,6 +1,6 @@
 <launch>
 	<arg name="rviz" default="true" />
-        <arg name="DirectoryPath" default="/mnt/external_partition/daniel/rosbag/pcds/Wed_2023.01.11_17:30:58/" />
+        <arg name="DirectoryPath" default="/home/daniel/Downloads/export/Fri_2023.01.13_13:25:21/" />
 	
 
         <param name="voxel_size" type="double" value="1" />
