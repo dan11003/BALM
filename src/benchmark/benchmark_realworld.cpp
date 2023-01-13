@@ -131,12 +131,12 @@ void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_
     pl_transform(pl_tem, x_buf[i]);
     pl_send += pl_tem;
 
-    /*if((i%200==0 && i!=0) || i == winsize-1)
+    if((i%200==0 && i!=0) || i == winsize-1)
     {
       pub_pl_func(pl_send, pub_show);
       pl_send.clear();
       sleep(0.5);
-    }*/
+    }
 
     PointType ap;
     ap.x = x_buf[i].p.x();
@@ -204,8 +204,9 @@ int main(int argc, char **argv)
     data_show(x_buf, pl_fulls, path_before, true);
     data_show(x_buf, pl_fulls, path_before, false);
     printf("Initial point cloud is published.\n");
-    printf("Input '1' to start optimization...\n");
-    int a; cin >> a; if(a==0) exit(0);
+    printf("Starting optimization.\n");
+    //printf("Input '1' to start optimization...\n");
+    //int a; cin >> a; if(a==0) exit(0);
     
     BALM2 opt_lsv;
     opt_lsv.damping_iter(x_buf, voxhess);
@@ -225,7 +226,9 @@ int main(int argc, char **argv)
   const std::string path_after = directoryPath + "_after_BALM";
   data_show(x_buf, pl_fulls, path_after, true);
   data_show(x_buf, pl_fulls, path_after, false);
-  printf("Refined point cloud is published.\n");
+  printf("Refined finished\n");
+  std::cout << directoryPath << std::endl;
+
 
   ros::spin();
   return 0;
