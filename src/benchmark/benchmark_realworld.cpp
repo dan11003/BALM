@@ -105,12 +105,12 @@ void read_file(vector<IMUST> &x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl
 
 }
 void SavePointCLoud(const std::string& path, std::vector<pcl::PointCloud<PointType>::Ptr> clouds){
-    pcl::PointCloud<PointType>::Ptr merged(new pcl::PointCloud<PointType>());
-    for(auto && cld : clouds){
-      *merged += *cld;
-    }
-    pcl::PCDWriter writer;
-    writer.writeBinary(path, *merged);
+  pcl::PointCloud<PointType>::Ptr merged(new pcl::PointCloud<PointType>());
+  for(auto && cld : clouds){
+    *merged += *cld;
+  }
+  pcl::PCDWriter writer;
+  writer.writeBinary(path, *merged);
 }
 void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_fulls, const std::string& path, bool downsample)
 {
@@ -126,17 +126,18 @@ void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_
   for(int i=0; i<winsize; i++)
   {
     pcl::PointCloud<PointType> pl_tem = *pl_fulls[i];
-    if(downsample)
+    if(downsample){
       down_sampling_voxel(pl_tem, 0.05);
+    }
     pl_transform(pl_tem, x_buf[i]);
     pl_send += pl_tem;
 
-    if((i%200==0 && i!=0) || i == winsize-1)
+    /*if((i%200==0 && i!=0) || i == winsize-1)
     {
       pub_pl_func(pl_send, pub_show);
       pl_send.clear();
       sleep(0.5);
-    }
+    }*/
 
     PointType ap;
     ap.x = x_buf[i].p.x();
@@ -145,13 +146,21 @@ void data_show(vector<IMUST> x_buf, vector<pcl::PointCloud<PointType>::Ptr> &pl_
     ap.curvature = i;
     pl_path.push_back(ap);
   }
+  if(downsample){
+    pub_pl_func(pl_send, pub_show);
+    pub_pl_func(pl_send, pub_show);
+  }
   pcl::PCDWriter writer;
-  writer.writeBinary(path+"_cloud"  + (downsample ? "_downsample" : "") + ".pcd", pl_send);
+  if(!pl_send.empty()){
+    writer.writeBinary(path+"_cloud"  + (downsample ? "_downsample" : "") + ".pcd", pl_send);
+  }
 
   pub_pl_func(pl_path, pub_path);
 
   pcl::PCDWriter writer2;
-  writer2.writeBinary(path+"_traj.pcd", pl_path);
+  if(!pl_path.empty()){
+    writer2.writeBinary(path+"_traj.pcd", pl_path);
+  }
 }
 
 int main(int argc, char **argv)
@@ -186,7 +195,7 @@ int main(int argc, char **argv)
 
   pcl::PointCloud<PointType> pl_full, pl_surf, pl_path, pl_send;
   for(int iterCount=0; iterCount<1; iterCount++)
-  { 
+  {
     unordered_map<VOXEL_LOC, OCTO_TREE_ROOT*> surf_map;
 
     for(int i=0; i<win_size; i++)
